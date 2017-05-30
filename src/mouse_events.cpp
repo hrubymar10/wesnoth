@@ -142,8 +142,7 @@ void mouse_handler::touch_motion(int x, int y, const bool browse, bool update, m
 	bool selected_hex_has_unit = find_unit(selected_hex_).valid();
 	if(!selected_hex_has_unit && is_dragging() && dragging_started_) {
 		// Here, naive pan. In general, is it a problem that panning is synchronous?
-		// Looks like it can do frameskips.
-		// but does it use CPU? I think on iOS GPU is much more appropriate for panning.
+		// Does it use CPU? I think on iOS GPU is much more appropriate for panning.
 		// What does SDL2 have to offer?
 
 		SDL_GetMouseState(&mx, &my);
@@ -179,7 +178,7 @@ void mouse_handler::touch_motion(int x, int y, const bool browse, bool update, m
 		}
 		last_hex_ = new_hex;
 	}
-	
+
 	if(reachmap_invalid_) update = true;
 	
 	if(!update) return;
@@ -336,7 +335,7 @@ void mouse_handler::touch_motion(int x, int y, const bool browse, bool update, m
 		else
 			un.reset();
 	} //end planned unit map scope
-	
+
 	if( (!selected_hex_.valid()) && un && current_paths_.destinations.empty() &&
 		 !gui().fogged(un->get_location()))
 	{
@@ -364,7 +363,7 @@ void mouse_handler::touch_motion(int x, int y, const bool browse, bool update, m
 			
 			wb::future_map_if_active raii;
 			current_paths_ = pathfind::paths(*un, false, true,
-											 viewing_team(), path_turns_);
+											 viewing_team(), 1);
 		}
 		
 		unselected_paths_ = true;
@@ -1044,11 +1043,10 @@ void mouse_handler::select_hex(const map_location& hex, const bool browse, const
 
 	if(selected_hex_.valid() && unit.valid() && !unit->get_hidden()) {
 		next_unit_ = unit->get_location();
+		bool is_my = unit->side() == gui().viewing_side();
 
-		{
-			current_paths_ = pathfind::paths(*unit, false, true, viewing_team(), path_turns_);
-		}
 
+			current_paths_ = pathfind::paths(*unit, false, true, viewing_team(), is_my ?path_turns_: 1);
 		if(highlight) {
 			show_attack_options(unit);
 			gui().highlight_reach(current_paths_);
@@ -1060,7 +1058,7 @@ void mouse_handler::select_hex(const map_location& hex, const bool browse, const
 		gui().set_route(nullptr);
 
 		// Selection have impact only if we are not observing and it's our unit
-		if((!commands_disabled || pc_.get_whiteboard()->is_active()) && unit->side() == gui().viewing_side()) {
+		if((!commands_disabled || pc_.get_whiteboard()->is_active()) && is_my) {
 			if(!(browse || pc_.get_whiteboard()->unit_has_actions(&*unit))) {
 				sound::play_UI_sound("select-unit.wav");
 
