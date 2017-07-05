@@ -271,10 +271,10 @@ std::pair<wesnothd_connection_ptr, config> open_connection(std::string host)
 								throw wesnothd_error(_("Bad data received from server"));
 							}
 
-							if(salt.substr(0,3).compare("$H$") == 0) {
+							if(salt.compare(0, 3, "$H$") == 0) {
 								sp["password"] = utils::md5(utils::md5(password, utils::md5::get_salt(salt),
 									utils::md5::get_iteration_count(salt)).base64_digest(), salt.substr(12, 8)).base64_digest();
-							} else if(salt.substr(0,4).compare("$2y$") == 0) {
+							} else if(salt.compare(0, 4, "$2y$") == 0) {
 								char salt_buf[BCRYPT_HASHSIZE];
 								char hash_buf[BCRYPT_HASHSIZE];
 								std::size_t iteration_count_delim_pos = salt.find('$', 4);
