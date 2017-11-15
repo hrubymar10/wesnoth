@@ -141,11 +141,6 @@ preferences_dialog::preferences_dialog(const config& game_cfg, const PREFERENCE_
 	}
 }
 
-void preferences_dialog::on_filtertext_changed(text_box_base* textbox)
-{
-	hotkey_filter_callback(*textbox->get_window());
-}
-
 // Helper function to refresh resolution list
 void preferences_dialog::set_resolution_list(menu_button& res_list, CVideo& video)
 {
@@ -423,26 +418,25 @@ void preferences_dialog::post_build(window& window)
 	//
 
 	/* FULLSCREEN TOGGLE */
-	toggle_button& toggle_fullscreen =
-			find_widget<toggle_button>(&window, "fullscreen", false);
+	if(toggle_button* toggle_fullscreen = find_widget<toggle_button>(&window, "fullscreen", false, false)) {
+		toggle_fullscreen->set_value(fullscreen());
 
-	toggle_fullscreen.set_value(fullscreen());
-
-	// We bind a special callback function, so setup_single_toggle() is not used
-	connect_signal_mouse_left_click(toggle_fullscreen, std::bind(
-			&preferences_dialog::fullscreen_toggle_callback,
-			this, std::ref(window)));
+		// We bind a special callback function, so setup_single_toggle() is not used
+		connect_signal_mouse_left_click(*toggle_fullscreen, std::bind(
+				&preferences_dialog::fullscreen_toggle_callback,
+				this, std::ref(window)));
+	}
 
 	/* SET RESOLUTION */
-	menu_button& res_list = find_widget<menu_button>(&window, "resolution_set", false);
+	if(menu_button* res_list = find_widget<menu_button>(&window, "resolution_set", false, false)) {
+		res_list->set_use_markup(true);
+		res_list->set_active(!fullscreen());
 
-	res_list.set_use_markup(true);
-	res_list.set_active(!fullscreen());
+		set_resolution_list(*res_list, window.video());
 
-	set_resolution_list(res_list, window.video());
-
-	connect_signal_notify_modified(res_list,
-		std::bind(&preferences_dialog::handle_res_select, this, std::ref(window)));
+		connect_signal_notify_modified(*res_list,
+									   std::bind(&preferences_dialog::handle_res_select, this, std::ref(window)));
+	}
 
 	/* SHOW FLOATING LABELS */
 	register_bool("show_floating_labels", true,
@@ -484,9 +478,11 @@ void preferences_dialog::post_build(window& window)
 		[]() { return draw_delay() != 0; }, [](bool v) { set_draw_delay(v ? -1 : 0); });
 
 	/* SELECT THEME */
-	connect_signal_mouse_left_click(
-			find_widget<button>(&window, "choose_theme", false),
-			bind_void(&show_theme_dialog));
+	if(button* theme_button = find_widget<button>(&window, "choose_theme", false, false)) {
+		connect_signal_mouse_left_click(
+				*theme_button,
+				bind_void(&show_theme_dialog));
+	}
 
 	//
 	// SOUND PANEL
@@ -747,48 +743,45 @@ void preferences_dialog::post_build(window& window)
 		hotkey_category_entries.emplace_back("label", name.second, "checkbox", false);
 	}
 
-	multimenu_button& hotkey_menu = find_widget<multimenu_button>(&window, "hotkey_category_menu", false);
+	if(multimenu_button* hotkey_menu = find_widget<multimenu_button>(&window, "hotkey_category_menu", false, false)) {
 
-	hotkey_menu.set_values(hotkey_category_entries);
+		hotkey_menu->set_values(hotkey_category_entries);
+		connect_signal_notify_modified(*hotkey_menu,
+									   std::bind(&preferences_dialog::hotkey_type_filter_callback, this, std::ref(window)));
 
-	connect_signal_notify_modified(hotkey_menu,
-		std::bind(&preferences_dialog::hotkey_filter_callback, this, std::ref(window)));
-
-	listbox& hotkey_list = setup_hotkey_list(window);
-
-	text_box& filter = find_widget<text_box>(&window, "filter", false);
-	filter.set_text_changed_callback(std::bind(&preferences_dialog::on_filtertext_changed, this, _1));
+		listbox& hotkey_list = setup_hotkey_list(window);
 
 	// Action column
 	hotkey_list.register_translatable_sorting_option(0, [this](const int i) { return visible_hotkeys_[i]->description.str(); });
 
-	// Hotkey column
-	hotkey_list.register_sorting_option(1, [this](const int i) { return hotkey::get_names(visible_hotkeys_[i]->command); });
+		// Hotkey column
+		hotkey_list.register_sorting_option(1, [this](const int i) { return hotkey::get_names(visible_hotkeys_[i]->command); });
 
-	// Scope columns
-	hotkey_list.register_sorting_option(2, [this](const int i) { return !visible_hotkeys_[i]->scope[hotkey::SCOPE_GAME]; });
-	hotkey_list.register_sorting_option(3, [this](const int i) { return !visible_hotkeys_[i]->scope[hotkey::SCOPE_EDITOR]; });
-	hotkey_list.register_sorting_option(4, [this](const int i) { return !visible_hotkeys_[i]->scope[hotkey::SCOPE_MAIN_MENU]; });
+		// Scope columns
+		hotkey_list.register_sorting_option(2, [this](const int i) { return !visible_hotkeys_[i]->scope[hotkey::SCOPE_GAME]; });
+		hotkey_list.register_sorting_option(3, [this](const int i) { return !visible_hotkeys_[i]->scope[hotkey::SCOPE_EDITOR]; });
+		hotkey_list.register_sorting_option(4, [this](const int i) { return !visible_hotkeys_[i]->scope[hotkey::SCOPE_MAIN_MENU]; });
 
-	hotkey_list.set_active_sorting_option({0, listbox::SORT_ASCENDING}, true);
+		hotkey_list.set_active_sorting_option({0, listbox::SORT_ASCENDING}, true);
 
-	connect_signal_mouse_left_click(
-		find_widget<button>(&window, "btn_add_hotkey", false), std::bind(
-			&preferences_dialog::add_hotkey_callback,
-			this,
-			std::ref(hotkey_list)));
+		connect_signal_mouse_left_click(
+			find_widget<button>(&window, "btn_add_hotkey", false), std::bind(
+				&preferences_dialog::add_hotkey_callback,
+				this,
+				std::ref(hotkey_list)));
 
-	connect_signal_mouse_left_click(
-		find_widget<button>(&window, "btn_clear_hotkey", false), std::bind(
-			&preferences_dialog::remove_hotkey_callback,
-			this,
-			std::ref(hotkey_list)));
+		connect_signal_mouse_left_click(
+			find_widget<button>(&window, "btn_clear_hotkey", false), std::bind(
+				&preferences_dialog::remove_hotkey_callback,
+				this,
+				std::ref(hotkey_list)));
 
-	connect_signal_mouse_left_click(
-		find_widget<button>(&window, "btn_reset_hotkeys", false), std::bind(
-			&preferences_dialog::default_hotkey_callback,
-			this,
-			std::ref(window)));
+		connect_signal_mouse_left_click(
+			find_widget<button>(&window, "btn_reset_hotkeys", false), std::bind(
+				&preferences_dialog::default_hotkey_callback,
+				this,
+				std::ref(window)));
+	}
 }
 
 listbox& preferences_dialog::setup_hotkey_list(window& window)
@@ -916,54 +909,34 @@ void preferences_dialog::remove_hotkey_callback(listbox& hotkeys)
 	find_widget<label>(hotkeys.get_row_grid(row_number), "lbl_hotkey", false).set_label(hotkey::get_names(hotkey_item.command));
 }
 
-void preferences_dialog::hotkey_filter_callback(window& window) const
+void preferences_dialog::hotkey_type_filter_callback(window& window) const
 {
 	const multimenu_button& hotkey_menu = find_widget<const multimenu_button>(&window, "hotkey_category_menu", false);
-	const text_box& name_filter = find_widget<const text_box>(&window, "filter", false);
 
 	boost::dynamic_bitset<> toggle_states = hotkey_menu.get_toggle_states();
 	boost::dynamic_bitset<> res(visible_hotkeys_.size());
 
-	std::string text = name_filter.get_value();
+	if(!toggle_states.none()) {
+		for(size_t h = 0; h < visible_hotkeys_.size(); ++h) {
+			unsigned index = 0;
 
-	if(toggle_states.none()) {
-		// Nothing selected. It means that *all* categories are shown.
-		toggle_states = ~toggle_states;
-	}
-
-	for(std::size_t h = 0; h < visible_hotkeys_.size(); ++h) {
-		unsigned index = 0;
-
-		const std::string description = visible_hotkeys_[h]->description.str();
-
-		// Default to true if there is no filter text
-		bool found = true;
-
-		if(!text.empty()) {
-			for(const auto& word : utils::split(text, ' ')) {
-				found = std::search(description.begin(), description.end(), word.begin(), word.end(), chars_equal_insensitive)
-							!= description.end();
-
-				if(!found) {
+			for(const auto& name : cat_names_) {
+				if(visible_hotkeys_[h]->category == name.first) {
 					break;
+				} else {
+					++index;
 				}
 			}
-		}
 
-		// Filter categories
-		for(const auto& name : cat_names_) {
-			if(visible_hotkeys_[h]->category == name.first) {
-				break;
+			if(index < toggle_states.size()) {
+				res[h] = toggle_states[index];
 			} else {
-				++index;
+				res[h] = false;
 			}
 		}
-
-		if(index < toggle_states.size() && found) {
-			res[h] = toggle_states[index];
-		} else {
-			res[h] = false;
-		}
+	} else {
+		// Nothing selected. It means that *all* categories are shown.
+		res = ~res;
 	}
 
 	find_widget<listbox>(&window, "list_hotkeys", false).set_row_shown(res);
