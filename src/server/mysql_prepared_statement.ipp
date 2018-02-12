@@ -109,6 +109,8 @@ template<> std::string fetch_result<std::string>(MYSQL_STMT* stmt, const std::st
 		mysql_stmt_free_result(stmt);
 	} ;
 
+	mysql_stmt_store_result(stmt);
+
 	int res = mysql_stmt_fetch(stmt);
 	if(res == MYSQL_NO_DATA)
 		throw sql_error("no data returned", sql);
