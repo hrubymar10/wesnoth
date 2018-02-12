@@ -82,6 +82,7 @@ public:
 	static bool is_valid_prefix(const std::string& hash);
 	std::string get_salt() const;
 	virtual std::string hex_digest() const override;
+	virtual std::string base64_digest() const override;
 };
 
 } // namespace utils

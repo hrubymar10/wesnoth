@@ -188,4 +188,9 @@ std::string bcrypt::hex_digest() const
 	return std::string(hash.data());
 }
 
+std::string bcrypt::base64_digest() const
+{
+	return std::string(hash.data());
+}
+
 } // namespace utils
