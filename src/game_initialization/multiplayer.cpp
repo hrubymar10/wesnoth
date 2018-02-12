@@ -271,7 +271,7 @@ std::pair<wesnothd_connection_ptr, config> open_connection(std::string host)
 								throw wesnothd_error(_("Bad data received from server"));
 							}
 
-							if(utils::md5::is_valid_hash(salt)) {
+							if(utils::md5::is_valid_prefix(salt)) {
 								sp["password"] = utils::md5(utils::md5(password, utils::md5::get_salt(salt),
 									utils::md5::get_iteration_count(salt)).base64_digest(), salt.substr(12, 8)).base64_digest();
 							} else if(utils::bcrypt::is_valid_prefix(salt)) {

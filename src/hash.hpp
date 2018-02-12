@@ -52,6 +52,7 @@ class md5 : public hash_digest<16>
 public:
 	static int get_iteration_count(const std::string& hash);
 	static std::string get_salt(const std::string& hash);
+	static bool is_valid_prefix(const std::string& hash);
 	static bool is_valid_hash(const std::string& hash);
 	explicit md5(const std::string& input);
 	md5(const std::string& input, const std::string& salt, int iteration_count = 10);

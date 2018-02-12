@@ -84,9 +84,14 @@ std::string md5::get_salt(const std::string& hash) {
 	return hash.substr(4,8);
 }
 
+bool md5::is_valid_prefix(const std::string& hash)
+{
+	return hash.substr(0,3) == hash_prefix;
+}
+
 bool md5::is_valid_hash(const std::string& hash) {
 	if(hash.size() != 34) return false;
-	if(hash.substr(0,3) != hash_prefix) return false;
+	if(!is_valid_prefix(hash)) return false;
 
 	const int iteration_count = get_iteration_count(hash);
 	if(iteration_count < 7 || iteration_count > 30) return false;
