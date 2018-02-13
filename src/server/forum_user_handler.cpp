@@ -77,7 +77,7 @@ bool fuh::login(const std::string& name, const std::string& password, const std:
 	std::string valid_hash;
 
 	if(utils::md5::is_valid_hash(hash)) { // md5 hash
-		valid_hash = utils::md5(hash.substr(12,34), seed).hex_digest();
+		valid_hash = utils::md5(hash.substr(12,34), seed).base64_digest();
 	} else if(utils::bcrypt::is_valid_prefix(hash)) { // bcrypt hash
 		valid_hash = utils::md5(hash, seed).base64_digest();
 	} else {
