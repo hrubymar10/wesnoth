@@ -20,7 +20,8 @@
 
 #include "global.hpp"
 #include "exceptions.hpp"
-#include "bcrypt/bcrypt.h"
+
+#define BCRYPT_HASHSIZE	(64)
 
 namespace utils {
 
