@@ -125,6 +125,7 @@ class user_handler {
 
 		/** Create a random string of digits for password encryption. */
 		std::string create_salt(int length =8);
+		std::string create_secure_salt();
 
 		/**
 		 * Create custom salt.
