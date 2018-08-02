@@ -123,7 +123,7 @@ std::string os_version()
 #if defined(__APPLE__)
 
 	//
-	// Standard Mac OS X version
+	// Standard Apple version
 	//
 	
 	return desktop::apple::os_version();
