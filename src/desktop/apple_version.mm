@@ -23,8 +23,7 @@
 #endif
 
 #if defined(__IPHONEOS__)
-#include <sys/sysctl.h>
-#include <Plist.hpp>
+#include <iOS_device_info.hpp>
 #else
 #import <Foundation/Foundation.h>
 #endif
@@ -38,67 +37,7 @@ namespace desktop {
 			// Standard iOS version
 			//
 			
-			struct utsname systemInfo;
-			uname(&systemInfo);
-			
-			std::string device_info = "";
-			
-			//TODO: Move this map to better place and add all devices
-			std::map<std::string, std::string> devices {
-				{ "x86_64", "iOS Simulator" },
-				{ "iPad7,5", "iPad 2018" },
-			};
-			
-			if ( devices.find(systemInfo.machine) == devices.end() ) {
-				device_info += std::string(systemInfo.machine);
-			} else {
-				device_info += devices[systemInfo.machine];
-			}
-			
-			device_info += ", ";
-			
-			static const std::string version_plist = "/System/Library/CoreServices/SystemVersion.plist";
-			std::map<std::string, boost::any> systemVersion;
-			
-			if(filesystem::file_exists(version_plist)) {
-				Plist::readPlist("/System/Library/CoreServices/SystemVersion.plist", systemVersion);
-			}
-			
-			if ( systemVersion.find("ProductVersion") == systemVersion.end() ) {
-				size_t size;
-				sysctlbyname("kern.osrelease", nullptr, &size, nullptr, 0);
-				
-				auto *answer = static_cast<char *>(malloc(size));
-				sysctlbyname("kern.osrelease", answer, &size, nullptr, 0);
-				
-				std::string result(answer);
-				free(answer);
-				
-				device_info += "Darwin " + std::string(result);
-			} else {
-				device_info += "iOS " + std::string(boost::any_cast<std::string>(systemVersion["ProductVersion"]));
-			}
-			
-			device_info += " (";
-			
-			if ( systemVersion.find("ProductBuildVersion") == systemVersion.end() ) {
-				size_t size;
-				sysctlbyname("kern.osversion", nullptr, &size, nullptr, 0);
-				
-				auto *answer = static_cast<char *>(malloc(size));
-				sysctlbyname("kern.osversion", answer, &size, nullptr, 0);
-				
-				std::string result(answer);
-				free(answer);
-				
-				device_info += std::string(result);
-			} else {
-				device_info += std::string(boost::any_cast<std::string>(systemVersion["ProductBuildVersion"]));
-			}
-			
-			device_info += ")";
-			
-			return device_info;
+			return iOS_device_info::get_device_name() + ", iOS " + iOS_device_info::get_os_version() + " (" + iOS_device_info::get_os_build_version() + ")";
 #else
 
 			//
