@@ -198,16 +198,20 @@ loading_screen::~loading_screen()
 	 * to the worker functions (filesystem.cpp, config parsing code, etc.) and then use that
 	 * to end the thread faster.
 	 */
-	if(is_worker_running_) {
+    int i = 0;
+    while (is_worker_running_) {
 #if defined(_MSC_VER) && _MSC_VER <= 1800
-		HANDLE process = GetCurrentProcess();
-		TerminateProcess(process, 0u);
+        HANDLE process = GetCurrentProcess();
+        TerminateProcess(process, 0u);
 #elif defined(_LIBCPP_VERSION) || defined(__MINGW32__)
-		std::_Exit(0);
+        //std::_Exit(0);
+        i++;
+        printf("waiting for %i seconds...\n", i);
+        sleep(1);
 #else
-		std::quick_exit(0);
+        std::quick_exit(0);
 #endif
-	}
+    }
 
 	clear_timer();
 	current_load = nullptr;
