@@ -28,6 +28,12 @@
 #include <cassert>
 #include <vector>
 
+#if defined(__IPHONEOS__)
+
+#include <iOS_device_info.hpp>
+
+#endif
+
 static lg::log_domain log_display("display");
 #define LOG_DP LOG_STREAM(info, log_display)
 #define ERR_DP LOG_STREAM(err, log_display)
@@ -246,8 +252,14 @@ void CVideo::init_window()
 	// Otherwise, SDL 2.0.5 on iOS crashes.
 	const int x = SDL_WINDOWPOS_CENTERED;
 	const int y = SDL_WINDOWPOS_CENTERED;
+    
+    window_flags |= SDL_WINDOW_ALLOW_HIGHDPI;
+    window_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP; //IMPORTANT!
 #endif
 
+    printf("device: %s; width_pt %f; height_pt %f\n", iOS_device_info::get_device_name().c_str(), iOS_device_info::get_device_screen_width_pt(), iOS_device_info::get_device_screen_height_pt());
+    printf("initializing: x: %d; y: %d; w: %i; h %i\n", x, y, w, h);
+    printf("initializing: min_w: %d; min_h: %d\n", preferences::min_window_width, preferences::min_window_height);
 	// Initialize window
 	window.reset(new sdl::window("", x, y, w, h, window_flags, SDL_RENDERER_SOFTWARE));
 
