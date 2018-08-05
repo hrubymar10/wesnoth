@@ -265,12 +265,7 @@ void CVideo::init_window()
 
 	std::cerr << "Setting mode to " << w << "x" << h << std::endl;
 
-#if defined(__IPHONEOS__)
-    //disable minimum window size on iOS
-    window->set_minimum_size(w, h);
-#else
-    window->set_minimum_size(preferences::min_window_width, preferences::min_window_height);
-#endif
+	window->set_minimum_size(preferences::min_window_width, preferences::min_window_height);
 
 	SDL_DisplayMode currentDisplayMode;
 	SDL_GetCurrentDisplayMode(window->get_display_index(), &currentDisplayMode);
