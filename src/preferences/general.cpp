@@ -39,12 +39,6 @@
 #include <unistd.h>
 #endif
 
-#if defined(__IPHONEOS__)
-
-#include <iOS_device_info.hpp>
-
-#endif
-
 static lg::log_domain log_config("config");
 #define ERR_CFG LOG_STREAM(err , log_config)
 
@@ -68,8 +62,8 @@ namespace preferences {
  *
  * Add any variables of similar type here.
  */
-const int min_window_width  = 800;
-const int min_window_height = 600;
+const int min_window_width  = 480;
+const int min_window_height = 320;
 
 const int def_window_width  = 1280;
 const int def_window_height = 720;
@@ -378,25 +372,18 @@ void set_scroll_to_action(bool ison)
 
 point resolution()
 {
-#if defined(__IPHONEOS__)
-    const int w = iOS_device_info::get_device_screen_height_pt();
-    const int h = iOS_device_info::get_device_screen_width_pt();
-    
-    return point(w, h);
-#else
-    const unsigned x_res = prefs["xresolution"].to_unsigned();
-    const unsigned y_res = prefs["yresolution"].to_unsigned();
-    
-    // Either resolution was unspecified, return default.
-    if(x_res == 0 || y_res == 0) {
-        return point(def_window_width, def_window_height);
-    }
-    
-    return point(
-                 std::max<unsigned>(x_res, min_window_width),
-                 std::max<unsigned>(y_res, min_window_height)
-                 );
-#endif
+	const unsigned x_res = prefs["xresolution"].to_unsigned();
+	const unsigned y_res = prefs["yresolution"].to_unsigned();
+
+	// Either resolution was unspecified, return default.
+	if(x_res == 0 || y_res == 0) {
+		return point(def_window_width, def_window_height);
+	}
+
+	return point(
+		std::max<unsigned>(x_res, min_window_width),
+		std::max<unsigned>(y_res, min_window_height)
+	);
 }
 
 bool maximized()
