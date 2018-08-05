@@ -488,6 +488,8 @@ commandline_options::commandline_options (const std::vector<std::string>& args) 
 		translation_percent = 0;
 	else if(vm.count("translations-over"))
 		translation_percent = utils::clamp<unsigned int>(vm["translations-over"].as<unsigned int>(), 0, 100);
+    
+    parse_log_domains_("gui/general",lg::debug().get_severity());
 }
 
 void commandline_options::parse_log_domains_(const std::string &domains_string, const int severity)
