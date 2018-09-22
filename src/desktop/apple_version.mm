@@ -22,44 +22,48 @@
 #define __IPHONEOS__ (__ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__*1000)
 #endif
 
-#import <Foundation/Foundation.h>
-
 #if defined(__IPHONEOS__)
-#import <UIKit/UIKit.h>
+#include <iOS_device_info.hpp>
+#else
+#import <Foundation/Foundation.h>
 #endif
 
 namespace desktop {
-namespace apple {
-	std::string os_version() {
-
-		//
-		// Standard Apple version
-		//
-
-		std::string version_string = "";
-
-		NSArray *version_array = [[[NSProcessInfo processInfo] operatingSystemVersionString] componentsSeparatedByString:@" "];
-
+	namespace apple {
+		std::string os_version() {
 #if defined(__IPHONEOS__)
-		std::string version_string = "iOS ";
+			
+			//
+			// Standard iOS version
+			//
+			
+			return iOS_device_info::get_device_name() + ", iOS " + iOS_device_info::get_os_version() + " (" + iOS_device_info::get_os_build_version() + ")";
 #else
-		const version_info version_info([[version_array objectAtIndex:1] UTF8String]);
-
-		if (version_info.major_version() == 10 && version_info.minor_version() < 12) {
-			version_string = "Apple OS X ";
-		} else {
-			version_string = "Apple macOS ";
-		}
+			
+			//
+			// Standard macOS version
+			//
+			
+			std::string version_string = "Apple";
+			NSArray *version_array = [[[NSProcessInfo processInfo] operatingSystemVersionString] componentsSeparatedByString:@" "];
+			
+			const version_info version_info([[version_array objectAtIndex:1] UTF8String]);
+			
+			if (version_info.major_version() == 10 && version_info.minor_version() < 12) {
+				version_string += " OS X ";
+			} else {
+				version_string += " macOS ";
+			}
+			
+			version_string += [[version_array objectAtIndex:1] UTF8String];
+			version_string += " (";
+			version_string += [[version_array objectAtIndex:3] UTF8String];
+			
+			return version_string;
 #endif
-
-		version_string += [[version_array objectAtIndex:1] UTF8String];
-		version_string += " (";
-		version_string += [[version_array objectAtIndex:3] UTF8String];
-
-		return version_string;
-	}
-
-} // end namespace apple
+		}
+		
+	} // end namespace apple
 } // end namespace desktop
 
 #endif //end __APPLE__
