@@ -23,7 +23,7 @@
 #endif
 
 #if defined(__IPHONEOS__)
-//TODO: Implement iOS version detection
+#include <iOS_device_info.hpp>
 #else
 #import <Foundation/Foundation.h>
 #endif
@@ -32,8 +32,18 @@ namespace desktop {
 	namespace apple {
 		std::string os_version() {
 #if defined(__IPHONEOS__)
-			//TODO: Implement iOS version detection
+			
+			//
+			// Standard iOS version
+			//
+			
+			return iOS_device_info::get_device_name() + ", iOS " + iOS_device_info::get_os_version() + " (" + iOS_device_info::get_os_build_version() + ")";
 #else
+			
+			//
+			// Standard macOS version
+			//
+			
 			std::string version_string = "Apple";
 			NSArray *version_array = [[[NSProcessInfo processInfo] operatingSystemVersionString] componentsSeparatedByString:@" "];
 			
