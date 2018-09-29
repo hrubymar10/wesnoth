@@ -22,10 +22,10 @@
 #define __IPHONEOS__ (__ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__*1000)
 #endif
 
-#if defined(__IPHONEOS__)
-#include <iOS_device_info.hpp>
-#else
 #import <Foundation/Foundation.h>
+
+#if defined(__IPHONEOS__)
+#import <UIKit/UIKit.h>
 #endif
 
 namespace desktop {
@@ -37,7 +37,14 @@ namespace desktop {
 			// Standard iOS version
 			//
 			
-			return iOS_device_info::get_device_name() + ", iOS " + iOS_device_info::get_os_version() + " (" + iOS_device_info::get_os_build_version() + ")";
+			std::string version_string = "iOS ";
+			NSArray *version_array = [[[NSProcessInfo processInfo] operatingSystemVersionString] componentsSeparatedByString:@" "];
+			
+			version_string += [[version_array objectAtIndex:1] UTF8String];
+			version_string += " (";
+			version_string += [[version_array objectAtIndex:3] UTF8String];
+			
+			return version_string;
 #else
 			
 			//
