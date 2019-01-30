@@ -747,7 +747,7 @@ void preferences_dialog::post_build(window& window)
 
 		hotkey_menu->set_values(hotkey_category_entries);
 		connect_signal_notify_modified(*hotkey_menu,
-									   std::bind(&preferences_dialog::hotkey_type_filter_callback, this, std::ref(window)));
+									   std::bind(&::gui2::dialogs::preferences_dialog::hotkey_filter_callback, this, std::ref(window)));
 
 		listbox& hotkey_list = setup_hotkey_list(window);
 
@@ -909,7 +909,7 @@ void preferences_dialog::remove_hotkey_callback(listbox& hotkeys)
 	find_widget<label>(hotkeys.get_row_grid(row_number), "lbl_hotkey", false).set_label(hotkey::get_names(hotkey_item.command));
 }
 
-void preferences_dialog::hotkey_type_filter_callback(window& window) const
+	void preferences_dialog::hotkey_filter_callback(window& window) const
 {
 	const multimenu_button& hotkey_menu = find_widget<const multimenu_button>(&window, "hotkey_category_menu", false);
 
